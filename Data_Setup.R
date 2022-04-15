@@ -128,8 +128,33 @@ data<-data%>%
     CDR_1==0 & CDR_2==0 & CDR_3==1 ~ yrs_since_mri_3,
     CDR_1==0 & CDR_2==1 ~ yrs_since_mri_2))
 
-data_for_python <- data%>%
+data <- data%>%
   rename(ID=RID)%>%
   dplyr::select(-c(15:47))
-write.csv(data_for_python,"./Data/data_for_python.csv",row.names = F)
+
+# Cortical thickness 
+data <- data%>%
+  mutate(ATN_CortThick = case_when(
+    AmyPositivity=="A-" & Cog_Convert=="0" ~ thick))
+
+NeuroPercentile_all<-quantile(data$ATN_CortThick, probs=seq(0,1,0.2), na.rm=TRUE) 
+NeuroPercentile_all
+NeuroPercentile<-quantile(data$ATN_CortThick, probs=0.2, na.rm=TRUE) 
+NeuroPercentile
+
+data <- data%>%
+  mutate(NeuroPositivity = case_when(
+    thick <= NeuroPercentile ~ "N+",
+    thick > NeuroPercentile ~ "N-"))
+
+# Biomarker_group variable format: 1: A+N+, 2: A+N-, 3:A-N+, 4: A-N-
+data <- data%>%
+  mutate(biomarker_group = case_when(
+    AmyPositivity=="A+" & NeuroPositivity=="N+" ~ "1",
+    AmyPositivity=="A+" & NeuroPositivity=="N-" ~ "2",
+    AmyPositivity=="A-" & NeuroPositivity=="N+" ~ "3",
+    AmyPositivity=="A-" & NeuroPositivity=="N-" ~ "4"))%>%
+  dplyr::select(-c(Study,tothipp,ICV,AmyPositivity,ATN_CortThick,NeuroPositivity))
+
+write.csv(data,"./Data/data_for_python.csv",row.names = F)
 
