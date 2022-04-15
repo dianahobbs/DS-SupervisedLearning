@@ -146,6 +146,8 @@ cog <- merge(CDR,MMSE,by=c("RID","VISCODE2"))%>%
 rm(CDR,MMSE)
 
 ADNI_data <- merge(data,cog,by=c("RID","VISCODE2"),all=F)%>%
+  mutate(days_since_mri=as.numeric(difftime(CDR_Date,MR_Date,units = "days")))%>%
+  mutate(yrs_since_mri=as.numeric(difftime(CDR_Date,MR_Date, unit="weeks"))/52.25)%>%
   group_by(RID)%>% # Grouping by ID & keeping only distinct CDR visits for each participant
   distinct(CDR_Date, .keep_all = T)%>%
   ungroup()

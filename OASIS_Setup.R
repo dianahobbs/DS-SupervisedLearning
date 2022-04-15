@@ -58,10 +58,12 @@ rm(centiloid,demo,image,mri)
 
 data$Label <- substring(data$Label, nchar(as.character(data$Label)) - 3)
 data$Label <- as.numeric(data$Label)
+data$RID <- substring(data$RID, nchar(as.character(data$RID)) - 4)
+data$RID <- as.numeric(data$RID)
+
 OASIS_data <- data%>%
-  mutate(followup = Label/365.5)%>%
+  mutate(yrs_since_mri = Label/365.5)%>%
   group_by(RID)%>%
-  arrange(Label)%>%
-  filter(row_number()==1)%>%
+  distinct(Label, .keep_all = T)%>% # Grouping by ID & keeping only distinct CDR visits for each participant
   ungroup()
 rm(data)
